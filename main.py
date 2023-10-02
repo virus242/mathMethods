@@ -1,8 +1,9 @@
 from mathMethods.methods import MathMethod
+import config.config as config
 import openpyxl
 import copy
 import telebot
-import config.config as config
+from telebot import types
 
 #AArr = [100, 250, 200, 300]
 #BArr = [200, 200, 100, 100, 250]
@@ -21,16 +22,27 @@ import config.config as config
 #     [3, 6, 2, 5],
 #     [3, 6, 5, 6],
 #     [3, 6, 5, 7]] 
-
+obj = MathMethod()
+FlagOnSaveDetails = []
 
 bot = telebot.TeleBot(config.TOKEN)
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, 
-                     "Для того чтобы использовать бота необходимо отправить ему файл в формате xlsx. \
-                     Файл должен быть оформлен в следующем виде.")
+                     "Для того чтобы использовать бота необходимо отправить ему файл в формате xlsx. Файл должен быть оформлен в следующем виде." +
+                     "Если вы хотите включить подробный разбор введите комманду '/include_details', а если вы хотите их выключить введите '/disable_details'")
     photo = open("Example.png", 'rb')
     bot.send_photo(message.chat.id, photo)
+
+@bot.message_handler(commands=['include_details'])
+def include_details(message):
+    bot.send_message(message.chat.id, "Теперь подробности будут видны")
+    obj.FlagOnSaveDetails = True
+
+@bot.message_handler(commands=['disable_details'])
+def disable_details(message):
+    bot.send_message(message.chat.id, "Убрал подробности")
+    obj.FlagOnSaveDetails = False
 
 @bot.message_handler(content_types=['document'])
 def handle_docs_photo(message):
@@ -68,17 +80,25 @@ def handle_docs_photo(message):
 
         AArr = AArr[:-1]    #delete None
 
-        obj = MathMethod(copy.deepcopy(AArr), copy.deepcopy(BArr), copy.deepcopy(CArr))
-        northwestMethodRes = obj.northwestMethod()
-
-
-        obj.setArgs(copy.deepcopy(AArr), copy.deepcopy(BArr), copy.deepcopy(CArr))
-        minCostMethodRes = obj.minCostMethod()
-
+        obj = MathMethod()
+        obj.setArgs(copy.deepcopy(AArr), copy.deepcopy(BArr), copy.deepcopy(CArr), False)
+        northwestMethodRes = obj.northwestMethod() 
+        if obj.getFlagOnSaveDetails():
+            for detail in obj.ArrStringsDetails:
+                bot.send_message(chat_id, detail)
         bot.send_message(chat_id, "Метод северо-западного угла = " + str(northwestMethodRes))
+
+        obj.setArgs(copy.deepcopy(AArr), copy.deepcopy(BArr), copy.deepcopy(CArr), False)
+        minCostMethodRes = obj.minCostMethod()
+        for mes in obj.getDetails():
+            bot.send_message(chat_id, mes)
+        if obj.getFlagOnSaveDetails():
+            for detail in obj.ArrStringsDetails:
+                bot.send_message(chat_id, detail)
         bot.send_message(chat_id, "Метод минимального остатка = " + str(minCostMethodRes))
     except Exception as e:
         bot.reply_to(message, e)
+
 
 bot.polling(none_stop=True, interval=0)
 

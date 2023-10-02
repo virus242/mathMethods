@@ -1,12 +1,21 @@
-
 class MathMethod:
-    def __init__(self, AArr: [int], BArr: [int], CArr: [[int]]) -> None:
-        self.setArgs(AArr, BArr, CArr)
 
-    def setArgs(self, AArr: [int], BArr: [int], CArr: [[int]]):
+    def setArgs(self, AArr: [int], BArr: [int], CArr: [[int]],FlagOnSaveDetails: bool, ArrStringsDetails: str = []):
         self.AArr = AArr
         self.BArr = BArr
         self.CArr = CArr
+        self.ArrStringsDetails = ArrStringsDetails
+        self.FlagOnSaveDetails = FlagOnSaveDetails
+    
+    def getDetails(self):
+        for i in self.ArrStringsDetails:
+            yield i[:-1]
+
+    def setFlagOnSaveDetails(self, status: bool):
+        self.FlagOnSaveDetails = status
+
+    def getFlagOnSaveDetails(self)->bool:
+        return self.FlagOnSaveDetails
     
     def TurningTaskInClosed(self):
         self.BSum = sum(self.AArr)
@@ -28,9 +37,10 @@ class MathMethod:
     def minCostMethod(self) -> int:
         self.TurningTaskInClosed()
         F = 0
-        Farr = []
         for i in range(0, len(self.AArr)):
             for j in range(0, len(self.BArr)):
+                print(f"CArr = {self.CArr}")
+                self.ArrStringsDetails.append(f"CArr = {self.CArr}")
                 indexMinNum = self.CArr[i].index(min(self.CArr[i], key=lambda x: int(x)))
 
 
@@ -39,7 +49,7 @@ class MathMethod:
 
                     self.AArr[i] -= self.BArr[indexMinNum]
                     self.BArr[indexMinNum] = 0
-                    self.CArr[i][indexMinNum] = 999
+                    self.CArr[i][indexMinNum] = 99999999
                 else:
                    
                     F += self.CArr[i][indexMinNum] * self.AArr[i]
@@ -55,6 +65,7 @@ class MathMethod:
 
         for i in range(0, len(self.AArr)):
             for j in range(lastInd, len(self.BArr)):
+                self.ArrStringsDetails.append(f"BArr = {self.BArr}")
                 if self.BArr[j] - self.AArr[i] < 0:
                     F += self.CArr[i][j] * self.BArr[j]
                     self.AArr[i] -= self.BArr[j]
