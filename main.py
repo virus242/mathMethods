@@ -2,7 +2,7 @@ from mathMethods.methods import MathMethod
 import openpyxl
 import copy
 import telebot
-import config
+import config.config as config
 
 #AArr = [100, 250, 200, 300]
 #BArr = [200, 200, 100, 100, 250]
