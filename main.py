@@ -2,6 +2,7 @@ from mathMethods.methods import MathMethod
 import openpyxl
 import copy
 import telebot
+import config
 
 #AArr = [100, 250, 200, 300]
 #BArr = [200, 200, 100, 100, 250]
@@ -21,30 +22,63 @@ import telebot
 #     [3, 6, 5, 6],
 #     [3, 6, 5, 7]] 
 
-AArr = []
-BArr = []
 
-CArr = []
-data = openpyxl.load_workbook("task.xlsx").active
+bot = telebot.TeleBot(config.TOKEN)
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(message.chat.id, 
+                     "Для того чтобы использовать бота необходимо отправить ему файл в формате xlsx. \
+                     Файл должен быть оформлен в следующем виде.")
+    photo = open("Example.png", 'rb')
+    bot.send_photo(message.chat.id, photo)
 
-for i in range(0, data.max_row):
-    CArr.append([])
-    countColumn = 0
-    for col in data.iter_cols(1, data.max_column):
-        
-        if countColumn == data.max_column-1:
-            AArr.append(col[i].value)
-        elif i == data.max_row-1:
-            BArr.append(col[i].value)
-        else:
-            CArr[i].append(col[i].value)
-        countColumn+=1    
+@bot.message_handler(content_types=['document'])
+def handle_docs_photo(message):
+    try:
+        chat_id = message.chat.id
 
-AArr = AArr[:-1]    #delete None
+        file_info = bot.get_file(message.document.file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
 
-obj = MathMethod(copy.deepcopy(AArr), copy.deepcopy(BArr), copy.deepcopy(CArr))
-print(obj.northwestMethod())
+        src = message.document.file_name;
+        with open(src, 'wb') as new_file:
+            new_file.write(downloaded_file)
+
+        bot.reply_to(message, "Работаем...")
 
 
-obj.setArgs(copy.deepcopy(AArr), copy.deepcopy(BArr), copy.deepcopy(CArr))
-print(obj.minCostMethod())
+        AArr = []
+        BArr = []
+
+        CArr = []
+        data = openpyxl.load_workbook("task.xlsx").active
+
+        for i in range(0, data.max_row):
+            CArr.append([])
+            countColumn = 0
+            for col in data.iter_cols(1, data.max_column):
+                
+                if countColumn == data.max_column-1:
+                    AArr.append(col[i].value)
+                elif i == data.max_row-1:
+                    BArr.append(col[i].value)
+                else:
+                    CArr[i].append(col[i].value)
+                countColumn+=1    
+
+        AArr = AArr[:-1]    #delete None
+
+        obj = MathMethod(copy.deepcopy(AArr), copy.deepcopy(BArr), copy.deepcopy(CArr))
+        northwestMethodRes = obj.northwestMethod()
+
+
+        obj.setArgs(copy.deepcopy(AArr), copy.deepcopy(BArr), copy.deepcopy(CArr))
+        minCostMethodRes = obj.minCostMethod()
+
+        bot.send_message(chat_id, "Метод северо-западного угла = " + str(northwestMethodRes))
+        bot.send_message(chat_id, "Метод минимального остатка = " + str(minCostMethodRes))
+    except Exception as e:
+        bot.reply_to(message, e)
+
+bot.polling(none_stop=True, interval=0)
+
