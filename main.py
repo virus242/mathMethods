@@ -37,67 +37,69 @@ def start(message):
 @bot.message_handler(commands=['include_details'])
 def include_details(message):
     bot.send_message(message.chat.id, "Теперь подробности будут видны")
-    obj.FlagOnSaveDetails = True
+    obj.setFlagOnSaveDetails(True)
+    print(obj.FlagOnSaveDetails)
 
 @bot.message_handler(commands=['disable_details'])
 def disable_details(message):
     bot.send_message(message.chat.id, "Убрал подробности")
-    obj.FlagOnSaveDetails = False
+    obj.setFlagOnSaveDetails(False)
+    print(obj.FlagOnSaveDetails)
 
 @bot.message_handler(content_types=['document'])
 def handle_docs_photo(message):
-    try:
-        chat_id = message.chat.id
+    print("in if Flag : ", f"{obj.getFlagOnSaveDetails()}")
+    chat_id = message.chat.id
 
-        file_info = bot.get_file(message.document.file_id)
-        downloaded_file = bot.download_file(file_info.file_path)
+    file_info = bot.get_file(message.document.file_id)
+    downloaded_file = bot.download_file(file_info.file_path)
 
-        src = message.document.file_name;
-        with open(src, 'wb') as new_file:
-            new_file.write(downloaded_file)
+    src = message.document.file_name;
+    with open(src, 'wb') as new_file:
+        new_file.write(downloaded_file)
 
-        bot.reply_to(message, "Работаем...")
+    bot.reply_to(message, "Работаем...")
 
 
-        AArr = []
-        BArr = []
+    AArr = []
+    BArr = []
 
-        CArr = []
-        data = openpyxl.load_workbook("task.xlsx").active
+    CArr = []
+    data = openpyxl.load_workbook("task.xlsx").active
 
-        for i in range(0, data.max_row):
-            CArr.append([])
-            countColumn = 0
-            for col in data.iter_cols(1, data.max_column):
-                
-                if countColumn == data.max_column-1:
-                    AArr.append(col[i].value)
-                elif i == data.max_row-1:
-                    BArr.append(col[i].value)
-                else:
-                    CArr[i].append(col[i].value)
-                countColumn+=1    
+    for i in range(0, data.max_row):
+        CArr.append([])
+        countColumn = 0
+        for col in data.iter_cols(1, data.max_column):
+            
+            if countColumn == data.max_column-1:
+                AArr.append(col[i].value)
+            elif i == data.max_row-1:
+                BArr.append(col[i].value)
+            else:
+                CArr[i].append(col[i].value)
+            countColumn+=1    
 
-        AArr = AArr[:-1]    #delete None
+    AArr = AArr[:-1]    #delete None
 
-        obj = MathMethod()
-        obj.setArgs(copy.deepcopy(AArr), copy.deepcopy(BArr), copy.deepcopy(CArr), False)
-        northwestMethodRes = obj.northwestMethod() 
-        if obj.getFlagOnSaveDetails():
-            for detail in obj.ArrStringsDetails:
-                bot.send_message(chat_id, detail)
-        bot.send_message(chat_id, "Метод северо-западного угла = " + str(northwestMethodRes))
+    
+    
+    obj.setArgs(copy.deepcopy(AArr), copy.deepcopy(BArr), copy.deepcopy(CArr))
+    northwestMethodRes = obj.northwestMethod() 
+    print("in if Flag : ", f"{obj.getFlagOnSaveDetails()}")
+    if obj.FlagOnSaveDetails:
+        print("send")
+        bot.send_message(chat_id, f"F = {obj.getDetails()[:-1]} = {northwestMethodRes}")
+    bot.send_message(chat_id, "Метод северо-западного угла = " + str(northwestMethodRes))
+    
+   
 
-        obj.setArgs(copy.deepcopy(AArr), copy.deepcopy(BArr), copy.deepcopy(CArr), False)
-        minCostMethodRes = obj.minCostMethod()
-        for mes in obj.getDetails():
-            bot.send_message(chat_id, mes)
-        if obj.getFlagOnSaveDetails():
-            for detail in obj.ArrStringsDetails:
-                bot.send_message(chat_id, detail)
-        bot.send_message(chat_id, "Метод минимального остатка = " + str(minCostMethodRes))
-    except Exception as e:
-        bot.reply_to(message, e)
+    obj.setArgs(copy.deepcopy(AArr), copy.deepcopy(BArr), copy.deepcopy(CArr))
+    minCostMethodRes = obj.minCostMethod()
+    if obj.FlagOnSaveDetails:
+        bot.send_message(chat_id, f"F = {obj.getDetails()[:-1]} = {minCostMethodRes}")
+    bot.send_message(chat_id, "Метод минимального остатка = " + str(minCostMethodRes))
+
 
 
 bot.polling(none_stop=True, interval=0)

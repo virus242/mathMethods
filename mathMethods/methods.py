@@ -1,15 +1,15 @@
 class MathMethod:
+    def __init__(self):
+        self.FlagOnSaveDetails = False
 
-    def setArgs(self, AArr: [int], BArr: [int], CArr: [[int]],FlagOnSaveDetails: bool, ArrStringsDetails: str = []):
+    def setArgs(self, AArr: [int], BArr: [int], CArr: [[int]], StringsDetails: str = ""):
         self.AArr = AArr
         self.BArr = BArr
         self.CArr = CArr
-        self.ArrStringsDetails = ArrStringsDetails
-        self.FlagOnSaveDetails = FlagOnSaveDetails
+        self.StringsDetails = StringsDetails
     
     def getDetails(self):
-        for i in self.ArrStringsDetails:
-            yield i[:-1]
+        return self.StringsDetails
 
     def setFlagOnSaveDetails(self, status: bool):
         self.FlagOnSaveDetails = status
@@ -39,20 +39,24 @@ class MathMethod:
         F = 0
         for i in range(0, len(self.AArr)):
             for j in range(0, len(self.BArr)):
-                print(f"CArr = {self.CArr}")
-                self.ArrStringsDetails.append(f"CArr = {self.CArr}")
                 indexMinNum = self.CArr[i].index(min(self.CArr[i], key=lambda x: int(x)))
 
 
                 if self.BArr[indexMinNum] - self.AArr[i] <= 0:
                     F += self.CArr[i][indexMinNum] * self.BArr[indexMinNum]
-
+                    if len(self.StringsDetails) == 0:
+                        self.StringsDetails += (f" {self.CArr[i][indexMinNum]} * {self.BArr[indexMinNum]} +")
+                    else:
+                        self.StringsDetails += (f" {self.CArr[i][indexMinNum]} * {self.BArr[indexMinNum]} +")
                     self.AArr[i] -= self.BArr[indexMinNum]
                     self.BArr[indexMinNum] = 0
                     self.CArr[i][indexMinNum] = 99999999
                 else:
-                   
                     F += self.CArr[i][indexMinNum] * self.AArr[i]
+                    if len(self.StringsDetails) == 0:
+                        self.StringsDetails += (f"{self.CArr[i][indexMinNum]} * {self.AArr[i]} +")
+                    else:
+                        self.StringsDetails += (f" {self.CArr[i][indexMinNum]} * {self.AArr[i]} +")
                     self.BArr[indexMinNum] -= self.AArr[i] 
                     self.AArr[i] = 0
                     break    
@@ -65,14 +69,21 @@ class MathMethod:
 
         for i in range(0, len(self.AArr)):
             for j in range(lastInd, len(self.BArr)):
-                self.ArrStringsDetails.append(f"BArr = {self.BArr}")
                 if self.BArr[j] - self.AArr[i] < 0:
                     F += self.CArr[i][j] * self.BArr[j]
+                    if len(self.StringsDetails) == 0:
+                        self.StringsDetails += (f"{self.CArr[i][j]} * {self.BArr[j]} +")
+                    else:
+                        self.StringsDetails += (f" {self.CArr[i][j]} * {self.BArr[j]} +")
                     self.AArr[i] -= self.BArr[j]
                     self.BArr[j] = 0
                     lastInd = j
                 else:
                     F += self.CArr[i][j] * self.AArr[i]
+                    if len(self.StringsDetails) == 0:
+                        self.StringsDetails += (f"{self.CArr[i][j]} * {self.AArr[i]} +")
+                    else:
+                        self.StringsDetails += (f" {self.CArr[i][j]} * {self.AArr[i]} +")
                     self.BArr[j] -= self.AArr[i] 
                     self.AArr[i] = 0
                     lastInd = j
