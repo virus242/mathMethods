@@ -26,7 +26,7 @@ obj = MathMethod()
 FlagOnSaveDetails = []
 
 bot = telebot.TeleBot(config.TOKEN)
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['start', 'help'])
 def start(message):
     bot.send_message(message.chat.id, 
                      "Для того чтобы использовать бота необходимо отправить ему файл в формате xlsx. Файл должен быть оформлен в следующем виде." +
